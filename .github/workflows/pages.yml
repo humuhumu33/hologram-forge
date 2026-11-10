@@ -1,5 +1,10 @@
 name: pages
 
+# Forge moved to https://uor-foundation.github.io/foundry/ (repository UOR-Foundation/foundry). This site now
+# serves one page that says so and lets a visitor export the apps their browser saved here (moved/index.html,
+# also served as 404.html so every old address finds it), plus a service worker that retires Forge's own
+# (moved/sw.js). Forge's sources stay in this repository; they are no longer deployed from it.
+
 on:
   push:
     branches: [main]
@@ -19,39 +24,17 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
         with:
-          targets: wasm32-unknown-unknown
-      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
-        with:
-          python-version: "3.12"
-      - uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
-        with:
-          path: |
-            ~/.cache/hologram-forge-lane
-            ~/.elan
-          key: lane-${{ hashFiles('PRISMPM_REV', 'lean-toolchain') }}
-      - name: The lane, which projects the page from the verified core and builds the wasm the page loads
-        run: ./scripts/lane.sh
-      - name: Byte identity corpus and shell hash check
-        run: python3 tools/corpus.py
-      - name: The site's included OpenRouter key, from the repository secret, never from the tree
-        if: ${{ env.KEY != '' }}
-        env:
-          KEY: ${{ secrets.OPENROUTER_WARMUP_KEY }}
-        run: python3 -c "import json,os;json.dump({'key':os.environ['KEY'],'model':'qwen/qwen3.8-flash'},open('shell/warmup.json','w'))"
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
-        with:
-          node-version: "24"
-      - name: Every shell script parses the way the browser parses it
-        run: node tools/shell_parse.mjs
-      - name: The vendored renderer, built beside the shell as the homepage (no Electron, no src/pro)
-        run: cd vendor/dyad && ELECTRON_SKIP_BINARY_DOWNLOAD=1 npm ci --ignore-scripts --engine-strict=false --force --no-audit --no-fund --loglevel=error && npx vite build --config vite.shell.config.mts --base /hologram-forge/ --outDir dist --emptyOutDir && python3 ../../scripts/stamp_shell.py
-      - name: The host answers the renderer's own contracts (the renderer's node_modules are installed by now)
-        run: node tools/contract_shapes.mjs --check
+          persist-credentials: false
+      - name: The moved page, served for every address of the old site
+        run: |
+          mkdir -p site
+          cp moved/index.html moved/sw.js site/
+          cp moved/index.html site/404.html
+          touch site/.nojekyll
       - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3.0.1
         with:
-          path: shell
+          path: site
   deploy:
     needs: build
     runs-on: ubuntu-24.04
