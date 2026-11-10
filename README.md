@@ -1,5 +1,7 @@
 # hologram-forge
 
+**Forge moved to [UOR-Foundation/foundry](https://github.com/UOR-Foundation/foundry), served at https://uor-foundation.github.io/foundry/.** This repository's site now serves only `moved/`: a page that says so and exports the apps a visitor's browser saved here (their apps, files, chats and versions, never keys) as a file the new site's Import App reads, and a service worker that retires Forge's own.
+
 An AI app builder in any browser, 100 percent serverless, as one PrismPM module.
 
 The vendored upstream renderer (`vendor/dyad`, pinned at `00d5f5af7fd0`, v1.15.0-beta.1) supplies the product: its React renderer, its typed IPC contracts, its state machines, its prompts, its scaffold. PrismPM supplies the authority: one Lean verified model in `src/*.lex.tex` that owns every rule, every address preimage and every visible word, projected by lean4-prod to Rust and wasm32 and shipped as a `.holo` v4. Hologram supplies the substrate: kappa addressing, a service worker that is the kernel of the page origin, and the contracts hologram-live already enforces, so an application built here runs unchanged on Hologram Desktop and Server.
